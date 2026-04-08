@@ -1,0 +1,12 @@
+[package]
+name = "one-billion-row-challange"
+version = "0.1.0"
+edition = "2024"
+default-run = "one-billion-row-challange"
+
+[[bin]]
+name = "generate"
+path = "src/generate.rs"
+
+[dependencies]
+rand = "0.8.0"
