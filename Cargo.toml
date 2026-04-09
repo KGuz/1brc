@@ -10,3 +10,9 @@ path = "src/generate.rs"
 
 [dependencies]
 rand = "0.8.0"
+
+[profile.release]
+debug = true
+panic = "abort"
+lto = "fat"
+incremental = true
