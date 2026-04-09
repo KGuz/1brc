@@ -64,3 +64,8 @@ Range (min … max):   26.179 s … 26.868 s    10 runs
 Time (mean ± σ):     20.716 s ±  0.098 s    [User: 20.435 s, System: 0.240 s]
 Range (min … max):   20.585 s … 20.890 s    10 runs
 ```
+**pattern matching parse**
+```sh
+Time (mean ± σ):     19.893 s ±  0.043 s    [User: 19.626 s, System: 0.235 s]
+Range (min … max):   19.810 s … 19.952 s    10 runs
+```

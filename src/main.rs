@@ -4,8 +4,12 @@ use std::fs::File;
 
 const DEFAULT_PATH: &str = "data/weather-measurements.csv";
 const DEFAULT_MEASUREMENTS: [i32; 4] = [i32::MAX, 0, 0, i32::MIN];
-const NEW_LINE: u8 = b'\n';
-const DELIMITER: u8 = b';';
+
+pub const DELIMITER: u8 = b';';
+pub const DOT: u8 = b'.';
+pub const MINUS: u8 = b'-';
+pub const NEW_LINE: u8 = b'\n';
+pub const ZERO: u8 = b'0';
 
 fn main() {
     let file = File::open(DEFAULT_PATH).unwrap();
@@ -46,22 +50,14 @@ fn main() {
     println!("}}");
 }
 
+#[rustfmt::skip]
 fn parse(temperature: &[u8]) -> i32 {
-    let mut val = 0;
-    let mut mul = 1;
-
-    for byte in temperature.iter().rev() {
-        match byte {
-            b'.' => continue,
-            b'-' => {
-                val = -val;
-                continue;
-            }
-            num => {
-                val += (num - b'0') as i32 * mul;
-                mul *= 10;
-            }
-        }
+    let f = |x| (x - ZERO) as i32;
+    match temperature {
+        [MINUS, h, d, DOT, u] => -f(h) * 100 - f(d) * 10 - f(u),
+        [MINUS,    d, DOT, u] =>             - f(d) * 10 - f(u),
+        [       h, d, DOT, u] =>  f(h) * 100 + f(d) * 10 + f(u),
+        [          d, DOT, u] =>               f(d) * 10 + f(u),
+        _ => unreachable!(),
     }
-    val
 }
