@@ -54,3 +54,8 @@ Range (min … max):   34.227 s … 35.263 s    10 runs
 Time (mean ± σ):     28.666 s ±  0.177 s    [User: 28.390 s, System: 0.231 s]
 Range (min … max):   28.376 s … 28.858 s    10 runs
 ```
+**integer temperature**
+```sh
+Time (mean ± σ):     26.565 s ±  0.194 s    [User: 26.276 s, System: 0.242 s]
+Range (min … max):   26.179 s … 26.868 s    10 runs
+```
