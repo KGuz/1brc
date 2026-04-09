@@ -1,5 +1,5 @@
 use std::{
-    collections::BTreeMap,
+    collections::HashMap,
     fs::File,
     io::{BufRead, BufReader},
 };
@@ -10,7 +10,7 @@ const DEFAULT_MEASUREMENTS: [f64; 4] = [f64::MAX, 0.0, 0.0, f64::MIN];
 fn main() {
     let file = File::open(DEFAULT_PATH).unwrap();
     let reader = BufReader::new(file);
-    let mut measurements: BTreeMap<String, [f64; 4]> = BTreeMap::new();
+    let mut measurements: HashMap<String, [f64; 4]> = HashMap::new();
 
     for line in reader.lines() {
         let line = line.unwrap();
@@ -28,6 +28,9 @@ fn main() {
     }
 
     print!("{{");
+    let mut measurements = Vec::from_iter(measurements.drain());
+    measurements.sort_unstable_by(|(a, _), (b, _)| a.cmp(b));
+
     let mut iterator = measurements.into_iter();
     if let Some((station, [min, sum, count, max])) = iterator.next() {
         print!("{station}={min:.1}/{:.1}/{max:.1}", sum / count);

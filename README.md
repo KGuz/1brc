@@ -39,3 +39,8 @@ The task is to write a program which reads the file, calculates the min, mean, a
 Time (mean ± σ):     95.449 s ±  0.391 s    [User: 94.483 s, System: 0.817 s]
 Range (min … max):   94.976 s … 96.210 s    10 runs
 ```
+**hashmap + sort**
+```sh
+Time (mean ± σ):     54.616 s ±  0.377 s    [User: 53.741 s, System: 0.789 s]
+Range (min … max):   54.166 s … 55.293 s    10 runs
+```
