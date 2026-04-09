@@ -49,3 +49,8 @@ Range (min … max):   54.166 s … 55.293 s    10 runs
 Time (mean ± σ):     34.469 s ±  0.306 s    [User: 34.187 s, System: 0.226 s]
 Range (min … max):   34.227 s … 35.263 s    10 runs
 ```
+**String -> &str**
+```sh
+Time (mean ± σ):     28.666 s ±  0.177 s    [User: 28.390 s, System: 0.231 s]
+Range (min … max):   28.376 s … 28.858 s    10 runs
+```

@@ -11,7 +11,7 @@ fn main() {
     let mmap = unsafe { Mmap::map(&file).unwrap() };
     let _ = mmap.advise(Advice::Sequential);
 
-    let mut measurements: HashMap<String, [f64; 4]> = HashMap::new();
+    let mut measurements: HashMap<&str, [f64; 4]> = HashMap::new();
     for line in mmap[..mmap.len() - 1].split(|c| *c == NEW_LINE) {
         let mut columns = line.split(|c| *c == DELIMITER);
 
@@ -19,9 +19,7 @@ fn main() {
         let temperature = unsafe { str::from_utf8_unchecked(columns.next().unwrap()) };
 
         let value: f64 = temperature.parse().unwrap();
-        let entry = measurements
-            .entry(station.to_string())
-            .or_insert(DEFAULT_MEASUREMENTS);
+        let entry = measurements.entry(station).or_insert(DEFAULT_MEASUREMENTS);
 
         entry[0] = entry[0].min(value);
         entry[1] += value;
