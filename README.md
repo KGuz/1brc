@@ -59,3 +59,8 @@ Range (min … max):   28.376 s … 28.858 s    10 runs
 Time (mean ± σ):     26.565 s ±  0.194 s    [User: 26.276 s, System: 0.242 s]
 Range (min … max):   26.179 s … 26.868 s    10 runs
 ```
+**rustc hash**
+```sh
+Time (mean ± σ):     20.716 s ±  0.098 s    [User: 20.435 s, System: 0.240 s]
+Range (min … max):   20.585 s … 20.890 s    10 runs
+```

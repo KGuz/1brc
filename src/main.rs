@@ -1,5 +1,6 @@
 use memmap2::{Advice, Mmap};
-use std::{collections::HashMap, fs::File};
+use rustc_hash::FxHashMap;
+use std::fs::File;
 
 const DEFAULT_PATH: &str = "data/weather-measurements.csv";
 const DEFAULT_MEASUREMENTS: [i32; 4] = [i32::MAX, 0, 0, i32::MIN];
@@ -11,7 +12,7 @@ fn main() {
     let mmap = unsafe { Mmap::map(&file).unwrap() };
     let _ = mmap.advise(Advice::Sequential);
 
-    let mut measurements = HashMap::new();
+    let mut measurements = FxHashMap::with_capacity_and_hasher(10_000, Default::default());
     for line in mmap[..mmap.len() - 1].split(|c| *c == NEW_LINE) {
         let mut columns = line.split(|c| *c == DELIMITER);
 
@@ -34,7 +35,7 @@ fn main() {
         let [min, sum, count, max] = measurement.map(f64::from);
         let (min, max) = (min / 10.0, max / 10.0);
 
-        print!("{station}={min:.1}/{:.1}/{max:.1}", sum / count as f64);
+        print!("{station}={min:.1}/{:.1}/{max:.1}", sum / count);
     }
     for (station, measurement) in iterator {
         let [min, sum, count, max] = measurement.map(f64::from);
