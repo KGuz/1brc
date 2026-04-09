@@ -74,3 +74,8 @@ Range (min … max):   19.810 s … 19.952 s    10 runs
 Time (mean ± σ):     19.306 s ±  0.046 s    [User: 19.047 s, System: 0.227 s]
 Range (min … max):   19.235 s … 19.373 s    10 runs
 ```
+**simd division**
+```sh
+Time (mean ± σ):     18.971 s ±  0.032 s    [User: 18.708 s, System: 0.228 s]
+Range (min … max):   18.913 s … 19.003 s    10 runs
+```
