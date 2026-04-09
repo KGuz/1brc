@@ -1,22 +1,24 @@
-use std::{
-    collections::HashMap,
-    fs::File,
-    io::{BufRead, BufReader},
-};
+use memmap2::{Advice, Mmap};
+use std::{collections::HashMap, fs::File};
 
 const DEFAULT_PATH: &str = "data/weather-measurements.csv";
 const DEFAULT_MEASUREMENTS: [f64; 4] = [f64::MAX, 0.0, 0.0, f64::MIN];
+const NEW_LINE: u8 = b'\n';
+const DELIMITER: u8 = b';';
 
 fn main() {
     let file = File::open(DEFAULT_PATH).unwrap();
-    let reader = BufReader::new(file);
+    let mmap = unsafe { Mmap::map(&file).unwrap() };
+    let _ = mmap.advise(Advice::Sequential);
+
     let mut measurements: HashMap<String, [f64; 4]> = HashMap::new();
+    for line in mmap[..mmap.len() - 1].split(|c| *c == NEW_LINE) {
+        let mut columns = line.split(|c| *c == DELIMITER);
 
-    for line in reader.lines() {
-        let line = line.unwrap();
-        let (station, temp) = line.split_once(';').unwrap();
-        let value: f64 = temp.parse().unwrap();
+        let station = unsafe { str::from_utf8_unchecked(columns.next().unwrap()) };
+        let temperature = unsafe { str::from_utf8_unchecked(columns.next().unwrap()) };
 
+        let value: f64 = temperature.parse().unwrap();
         let entry = measurements
             .entry(station.to_string())
             .or_insert(DEFAULT_MEASUREMENTS);

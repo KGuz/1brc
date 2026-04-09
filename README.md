@@ -44,3 +44,8 @@ Range (min … max):   94.976 s … 96.210 s    10 runs
 Time (mean ± σ):     54.616 s ±  0.377 s    [User: 53.741 s, System: 0.789 s]
 Range (min … max):   54.166 s … 55.293 s    10 runs
 ```
+**memmap**
+```sh
+Time (mean ± σ):     34.469 s ±  0.306 s    [User: 34.187 s, System: 0.226 s]
+Range (min … max):   34.227 s … 35.263 s    10 runs
+```

@@ -9,6 +9,7 @@ name = "generate"
 path = "src/generate.rs"
 
 [dependencies]
+memmap2 = "0.9.10"
 rand = "0.8.0"
 
 [profile.release]
