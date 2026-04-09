@@ -1,6 +1,9 @@
 use memmap2::{Advice, Mmap};
 use rustc_hash::FxHashMap;
-use std::fs::File;
+use std::{
+    fs::File,
+    io::{BufWriter, Write},
+};
 
 const DEFAULT_PATH: &str = "data/weather-measurements.csv";
 const DEFAULT_MEASUREMENTS: [i32; 4] = [i32::MAX, 0, 0, i32::MIN];
@@ -14,7 +17,7 @@ pub const ZERO: u8 = b'0';
 fn main() {
     let file = File::open(DEFAULT_PATH).unwrap();
     let mmap = unsafe { Mmap::map(&file).unwrap() };
-    let _ = mmap.advise(Advice::Sequential);
+    _ = mmap.advise(Advice::Sequential);
 
     let mut measurements = FxHashMap::with_capacity_and_hasher(10_000, Default::default());
     for line in mmap[..mmap.len() - 1].split(|c| *c == NEW_LINE) {
@@ -30,24 +33,23 @@ fn main() {
         entry[3] = entry[3].max(value);
     }
 
-    print!("{{");
     let mut measurements = Vec::from_iter(measurements.drain());
     measurements.sort_unstable_by(|(a, _), (b, _)| a.cmp(b));
 
+    let stdout = std::io::stdout().lock();
+    let mut writer = BufWriter::new(stdout);
+
+    _ = write!(writer, "{{");
     let mut iterator = measurements.into_iter();
     if let Some((station, measurement)) = iterator.next() {
-        let [min, sum, count, max] = measurement.map(f64::from);
-        let (min, max) = (min / 10.0, max / 10.0);
-
-        print!("{station}={min:.1}/{:.1}/{max:.1}", sum / count);
+        let [min, avg, max] = calculate(measurement);
+        _ = write!(writer, "{station}={min:.1}/{avg:.1}/{max:.1}");
     }
     for (station, measurement) in iterator {
-        let [min, sum, count, max] = measurement.map(f64::from);
-        let (min, max) = (min / 10.0, max / 10.0);
-
-        print!(", {station}={min:.1}/{:.1}/{max:.1}", sum / count);
+        let [min, avg, max] = calculate(measurement);
+        _ = write!(writer, ", {station}={min:.1}/{avg:.1}/{max:.1}");
     }
-    println!("}}");
+    _ = writeln!(writer, "}}");
 }
 
 #[rustfmt::skip]
@@ -60,4 +62,12 @@ fn parse(temperature: &[u8]) -> i32 {
         [          d, DOT, u] =>               f(d) * 10 + f(u),
         _ => unreachable!(),
     }
+}
+
+fn calculate([min, sum, count, max]: [i32; 4]) -> [f32; 3] {
+    [
+        min as f32 / 10.0,
+        sum as f32 / count as f32,
+        max as f32 / 10.0,
+    ]
 }

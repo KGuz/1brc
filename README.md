@@ -69,3 +69,8 @@ Range (min … max):   20.585 s … 20.890 s    10 runs
 Time (mean ± σ):     19.893 s ±  0.043 s    [User: 19.626 s, System: 0.235 s]
 Range (min … max):   19.810 s … 19.952 s    10 runs
 ```
+**buffered output**
+```sh
+Time (mean ± σ):     19.306 s ±  0.046 s    [User: 19.047 s, System: 0.227 s]
+Range (min … max):   19.235 s … 19.373 s    10 runs
+```
