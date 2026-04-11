@@ -5,17 +5,11 @@ use rustc_hash::FxHashMap;
 use std::{
     fs::File,
     io::{BufWriter, Write},
-    simd::Simd,
+    simd::{Simd, cmp::SimdPartialEq, u8x16},
 };
 
 const WEATHER_MEASUREMENTS: &str = "data/weather-measurements.csv";
 const DEFAULT_MEASUREMENTS: [i32; 4] = [i32::MAX, 0, 0, i32::MIN];
-
-const SEMICOLON: u8 = b';';
-const DOT: u8 = b'.';
-const MINUS: u8 = b'-';
-const NEW_LINE: u8 = b'\n';
-const ZERO: u8 = b'0';
 
 fn main() {
     let file = File::open(WEATHER_MEASUREMENTS).unwrap();
@@ -23,11 +17,19 @@ fn main() {
     _ = mmap.advise(Advice::Sequential);
 
     let mut measurements = FxHashMap::with_capacity_and_hasher(10_000, Default::default());
-    for line in mmap[..mmap.len() - 1].split(|c| *c == NEW_LINE) {
+    let (mut ptr, end) = (0, mmap.len() - 1);
+
+    while ptr < end {
+        let idx = ptr + find_new_line(&mmap[ptr..]);
+
+        let line = unsafe { mmap.get_unchecked(ptr..idx) };
         let (station, temperature) = split_semicolon(line);
         let station = unsafe { str::from_utf8_unchecked(station) };
+
         let entry = measurements.entry(station).or_insert(DEFAULT_MEASUREMENTS);
         aggregate(entry, parse(temperature));
+
+        ptr = idx + 1;
     }
 
     let mut measurements = Vec::from_iter(measurements.drain());
@@ -35,25 +37,43 @@ fn main() {
     print(measurements);
 }
 
-fn split_semicolon(buffer: &[u8]) -> (&[u8], &[u8]) {
-    unsafe {
-        let mut pos = buffer.len() - 4;
-        while *buffer.get_unchecked(pos) != SEMICOLON {
-            pos -= 1;
+fn find_new_line(mut buffer: &[u8]) -> usize {
+    const SPLAT: u8x16 = Simd::splat(b'\n');
+    const COUNT: usize = 16;
+
+    let mut ptr = 0;
+    while let Some((chunk, rest)) = buffer.split_first_chunk() {
+        let bytes = Simd::from_array(*chunk);
+        let index = bytes.simd_eq(SPLAT).first_set().map(|i| i + ptr);
+        if let Some(index) = index {
+            return index;
         }
-        let (before, after) = buffer.split_at_unchecked(pos + 1);
-        (before.get_unchecked(..before.len() - 1), after)
+        ptr += COUNT;
+        buffer = rest;
     }
+
+    let bytes = Simd::load_or_default(buffer);
+    let index = bytes.simd_eq(SPLAT).first_set().map(|i| i + ptr);
+    unsafe { index.unwrap_unchecked() }
+}
+
+fn split_semicolon(buffer: &[u8]) -> (&[u8], &[u8]) {
+    let mut pos = buffer.len() - 4;
+    while unsafe { *buffer.get_unchecked(pos) } != b';' {
+        pos -= 1;
+    }
+    let (before, after) = unsafe { buffer.split_at_unchecked(pos + 1) };
+    unsafe { (before.get_unchecked(..before.len() - 1), after) }
 }
 
 #[rustfmt::skip]
 fn parse(temperature: &[u8]) -> i32 {
-    let f = |x| (x - ZERO) as i32;
+    let f = |x| (x - b'0') as i32;
     match temperature {
-        [MINUS, h, d, DOT, u] => -f(h) * 100 - f(d) * 10 - f(u),
-        [MINUS,    d, DOT, u] =>             - f(d) * 10 - f(u),
-        [       h, d, DOT, u] =>  f(h) * 100 + f(d) * 10 + f(u),
-        [          d, DOT, u] =>               f(d) * 10 + f(u),
+        [b'-', h, d, b'.', u] => -f(h) * 100 - f(d) * 10 - f(u),
+        [b'-',    d, b'.', u] =>             - f(d) * 10 - f(u),
+        [      h, d, b'.', u] =>  f(h) * 100 + f(d) * 10 + f(u),
+        [         d, b'.', u] =>               f(d) * 10 + f(u),
         _ => unreachable!(),
     }
 }

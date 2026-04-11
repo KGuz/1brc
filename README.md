@@ -84,3 +84,8 @@ Range (min … max):   18.913 s … 19.003 s    10 runs
 Time (mean ± σ):     16.263 s ±  0.018 s    [User: 16.007 s, System: 0.229 s]
 Range (min … max):   16.241 s … 16.289 s    10 runs
 ```
+**simd line split**
+```sh
+Time (mean ± σ):     13.631 s ±  0.025 s    [User: 13.366 s, System: 0.240 s]
+Range (min … max):   13.588 s … 13.671 s    10 runs
+```
