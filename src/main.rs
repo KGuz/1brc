@@ -3,6 +3,7 @@
 use memmap2::{Advice, Mmap};
 use rustc_hash::FxHashMap;
 use std::{
+    collections::BTreeMap,
     fs::File,
     io::{BufWriter, Write},
     simd::{Simd, cmp::SimdPartialEq, u8x16},
@@ -17,7 +18,7 @@ fn main() {
     let mmap = unsafe { Mmap::map(&file).unwrap() };
     _ = mmap.advise(Advice::Sequential);
 
-    let mut measurements = FxHashMap::with_capacity_and_hasher(8192, Default::default());
+    let mut measurements = BTreeMap::new();
     let (mut ptr, len) = (0, mmap.len());
     let threads = unsafe { thread::available_parallelism().unwrap_unchecked() };
     let size = len / threads;
@@ -45,8 +46,6 @@ fn main() {
         }
     });
 
-    let mut measurements = Vec::from_iter(measurements.drain());
-    measurements.sort_unstable_by_key(|(a, _)| *a);
     print(measurements);
 }
 
@@ -130,7 +129,7 @@ fn calculate([min, sum, count, max]: [i32; 4]) -> [f32; 3] {
     (v / w).to_array()
 }
 
-fn print(measurements: Vec<(&str, [i32; 4])>) {
+fn print(measurements: BTreeMap<&str, [i32; 4]>) {
     let stdout = std::io::stdout().lock();
     let mut writer = BufWriter::new(stdout);
 

@@ -92,7 +92,7 @@ Range (min … max):   13.588 s … 13.671 s    10 runs
 **multithreading**
 ```sh
 Time (mean ± σ):     997.3 ms ±  12.9 ms    [User: 20757.5 ms, System: 395.4 ms]
-Range (min … max):   987.7 ms … 1021.9 ms    10 runs
+Range (min … max):   987.7 ms … 1021.9 ms   10 runs
 ```
 ```
 | Threads | Time (mean ± σ)    | Range (min … max)   | User     | System  |
@@ -103,4 +103,9 @@ Range (min … max):   987.7 ms … 1021.9 ms    10 runs
 |     8   |  1.943 s ± 0.013 s |  1.928 s …  1.975 s | 14.329 s | 0.276 s |
 |    16   |  1.296 s ± 0.004 s |  1.289 s …  1.303 s | 16.897 s | 0.323 s |
 |    24   |  0.997 s ± 0.013 s |  0.988 s …  1.022 s | 20.757 s | 0.395 s |
+```
+**BTreeMap at the end**
+```sh
+Time (mean ± σ):     956.2 ms ±  14.7 ms    [User: 19376.9 ms, System: 398.8 ms]
+Range (min … max):   939.2 ms … 982.6 ms    10 runs
 ```
