@@ -79,3 +79,8 @@ Range (min … max):   19.235 s … 19.373 s    10 runs
 Time (mean ± σ):     18.971 s ±  0.032 s    [User: 18.708 s, System: 0.228 s]
 Range (min … max):   18.913 s … 19.003 s    10 runs
 ```
+**split semicolon**
+```sh
+Time (mean ± σ):     16.263 s ±  0.018 s    [User: 16.007 s, System: 0.229 s]
+Range (min … max):   16.241 s … 16.289 s    10 runs
+```
