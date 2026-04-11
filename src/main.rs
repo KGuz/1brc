@@ -6,6 +6,7 @@ use std::{
     fs::File,
     io::{BufWriter, Write},
     simd::{Simd, cmp::SimdPartialEq, u8x16},
+    thread,
 };
 
 const WEATHER_MEASUREMENTS: &str = "data/weather-measurements.csv";
@@ -16,13 +17,47 @@ fn main() {
     let mmap = unsafe { Mmap::map(&file).unwrap() };
     _ = mmap.advise(Advice::Sequential);
 
-    let mut measurements = FxHashMap::with_capacity_and_hasher(10_000, Default::default());
-    let (mut ptr, end) = (0, mmap.len() - 1);
+    let mut measurements = FxHashMap::with_capacity_and_hasher(8192, Default::default());
+    let (mut ptr, len) = (0, mmap.len());
+    let threads = unsafe { thread::available_parallelism().unwrap_unchecked() };
+    let size = len / threads;
+
+    thread::scope(|s| {
+        let (tx, rx) = std::sync::mpsc::channel();
+        while ptr < len - size {
+            let mut end = ptr + size;
+            end += find_new_line(&mmap[end..]) + 1;
+
+            let buffer = &mmap[ptr..end];
+            let tx = tx.clone();
+            s.spawn(move || tx.send(process(buffer)));
+
+            ptr = end;
+        }
+        let buffer = &mmap[ptr..];
+        s.spawn(move || tx.send(process(buffer)));
+
+        while let Ok(result) = rx.recv() {
+            for (station, measurement) in result {
+                let entry = measurements.entry(station).or_insert(DEFAULT_MEASUREMENTS);
+                merge(entry, measurement);
+            }
+        }
+    });
+
+    let mut measurements = Vec::from_iter(measurements.drain());
+    measurements.sort_unstable_by_key(|(a, _)| *a);
+    print(measurements);
+}
+
+fn process(buffer: &[u8]) -> FxHashMap<&str, [i32; 4]> {
+    let mut measurements = FxHashMap::with_capacity_and_hasher(8192, Default::default());
+    let (mut ptr, end) = (0, buffer.len());
 
     while ptr < end {
-        let idx = ptr + find_new_line(&mmap[ptr..]);
+        let idx = ptr + find_new_line(&buffer[ptr..]);
 
-        let line = unsafe { mmap.get_unchecked(ptr..idx) };
+        let line = unsafe { buffer.get_unchecked(ptr..idx) };
         let (station, temperature) = split_semicolon(line);
         let station = unsafe { str::from_utf8_unchecked(station) };
 
@@ -31,10 +66,7 @@ fn main() {
 
         ptr = idx + 1;
     }
-
-    let mut measurements = Vec::from_iter(measurements.drain());
-    measurements.sort_unstable_by_key(|(a, _)| *a);
-    print(measurements);
+    measurements
 }
 
 fn find_new_line(mut buffer: &[u8]) -> usize {
@@ -78,11 +110,18 @@ fn parse(temperature: &[u8]) -> i32 {
     }
 }
 
-fn aggregate(entry: &mut [i32; 4], value: i32) {
-    entry[0] = entry[0].min(value);
-    entry[1] += value;
-    entry[2] += 10;
-    entry[3] = entry[3].max(value);
+fn aggregate([min, agg, cnt, max]: &mut [i32; 4], val: i32) {
+    *min = val.min(*min);
+    *agg += val;
+    *cnt += 10;
+    *max = val.max(*max);
+}
+
+fn merge([a_min, a_agg, a_cnt, a_max]: &mut [i32; 4], [b_min, b_agg, b_cnt, b_max]: [i32; 4]) {
+    *a_min = b_min.min(*a_min);
+    *a_agg += b_agg;
+    *a_cnt += b_cnt;
+    *a_max = b_max.max(*a_max);
 }
 
 fn calculate([min, sum, count, max]: [i32; 4]) -> [f32; 3] {
