@@ -109,3 +109,8 @@ Range (min … max):   987.7 ms … 1021.9 ms   10 runs
 Time (mean ± σ):     956.2 ms ±  14.7 ms    [User: 19376.9 ms, System: 398.8 ms]
 Range (min … max):   939.2 ms … 982.6 ms    10 runs
 ```
+**temperature struct**
+```sh
+Time (mean ± σ):     942.3 ms ±  14.5 ms    [User: 19210.5 ms, System: 387.2 ms]
+Range (min … max):   920.9 ms … 972.5 ms    10 runs
+```
