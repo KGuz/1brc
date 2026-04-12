@@ -114,3 +114,8 @@ Range (min … max):   939.2 ms … 982.6 ms    10 runs
 Time (mean ± σ):     942.3 ms ±  14.5 ms    [User: 19210.5 ms, System: 387.2 ms]
 Range (min … max):   920.9 ms … 972.5 ms    10 runs
 ```
+**cursor struct**
+```sh
+Time (mean ± σ):     930.5 ms ±   4.1 ms    [User: 19413.2 ms, System: 404.1 ms]
+Range (min … max):   924.7 ms … 938.0 ms    10 runs
+```
